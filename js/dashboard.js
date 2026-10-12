@@ -96,6 +96,14 @@ function render() {
   const primeiraVez = contar(resps, "primeira_vez_retiro");
   grafico("graf-primeira-vez", "pie", Object.keys(primeiraVez), Object.values(primeiraVez));
 
+  // primeira vez no Overflow (quem nunca foi em retiro nenhum conta como "Sim" aqui também)
+  const primeiraOverflow = { Sim: 0, Não: 0 };
+  resps.forEach((r) => {
+    const v = r.primeira_vez_retiro === "Sim, nunca fui em nenhum retiro" ? "Sim" : r.primeira_vez_overflow;
+    if (v === "Sim" || v === "Não") primeiraOverflow[v]++;
+  });
+  grafico("graf-primeira-overflow", "pie", Object.keys(primeiraOverflow), Object.values(primeiraOverflow));
+
   // expectativas
   const expect = contar(resps, "expectativas");
   const ordemExpect = ["Muito abaixo", "Abaixo", "Atendeu", "Superou"].filter((k) => expect[k]);

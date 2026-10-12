@@ -39,6 +39,11 @@ function culto(num, dados) {
   const pref = `culto${num}`;
   return [
     {
+      id: `${pref}_intro`, tipo: "conteudo", secao: `Culto ${num} — ${dados.quando}`,
+      titulo: `Vamos avaliar o culto de ${dados.quando}`,
+      texto: `${dados.pregacao} · Direção: ${dados.direcao}`,
+    },
+    {
       id: `${pref}_notas`, numero: true, secao: `Culto ${num} — ${dados.quando}`, tipo: "escala_grade",
       pergunta: `${dados.pregacao} · Direção: ${dados.direcao}`,
       itens: ["Louvor", "Palavra/Ministração", "Direção/Fluxo do culto", "Ambiente espiritual/Intercessão", "Duração/Tempo"],
@@ -165,14 +170,9 @@ const PESQUISA = {
     },
 
     // ---------- cultos ----------
-    {
-      id: "intro_cultos", tipo: "conteudo", secao: "Vamos avaliar por culto",
-      titulo: "Vamos avaliar por culto",
-      texto: "Agora, pra cada um dos 4 cultos, avalie alguns pontos e conte o que mais te marcou.",
-    },
     ...culto(1, { quando: "sexta à noite", pregacao: "Pregação: Pr. Filipe Bittencourt", direcao: "Anahy e Rafa" }),
-    ...culto(2, { quando: "sábado de manhã", pregacao: "Pregação: Pr. Eli e Pra. Suene", direcao: "Luan e Fran" }),
-    ...culto(3, { quando: "sábado à noite", pregacao: "Pregação: Pr. Eli e Pra. Suene", direcao: "Mari" }),
+    ...culto(2, { quando: "sábado de manhã", pregacao: "Pregação: Pra. Suene", direcao: "Luan e Fran" }),
+    ...culto(3, { quando: "sábado à noite", pregacao: "Pregação: Pr. Eli", direcao: "Mari" }),
     ...culto(4, { quando: "domingo de manhã", pregacao: "Pregação: Yuri Breder", direcao: "Gabi e Luiz" }),
 
     // ---------- estrutura e logística ----------
@@ -202,11 +202,24 @@ const PESQUISA = {
       itens: [
         "Montagem das Bandeiras (sexta à noite)",
         "Gincana Bíblica Indoor (sábado de manhã)",
-        "Circuito Físico / Batalha Naval (sábado à tarde)",
         "Pega-Bandeira Noturno (sábado à noite)",
-        "Devocionais (sábado e domingo de manhã)",
       ],
       rotulos: ESCALA_QUALIDADE, naoSei: "Não participei",
+    },
+    {
+      id: "momento_sabado_tarde", numero: true, secao: "Momentos especiais", tipo: "unica",
+      pergunta: "No sábado à tarde, você fez Circuito Físico ou Batalha Naval?",
+      opcoes: ["Circuito Físico", "Batalha Naval", "Não participei"],
+    },
+    {
+      id: "momento_circuito_nota", numero: true, secao: "Momentos especiais", tipo: "estrela",
+      pergunta: "Avalie o Circuito Físico",
+      mostrarSe: { pergunta: "momento_sabado_tarde", opcoes: ["Circuito Físico"] },
+    },
+    {
+      id: "momento_batalha_nota", numero: true, secao: "Momentos especiais", tipo: "estrela",
+      pergunta: "Avalie a Batalha Naval",
+      mostrarSe: { pergunta: "momento_sabado_tarde", opcoes: ["Batalha Naval"] },
     },
 
     // ---------- impacto espiritual ----------
