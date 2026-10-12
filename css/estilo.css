@@ -86,7 +86,9 @@ textarea:focus,input.txt:focus{outline:none;border-color:var(--teal)}
 .abas{display:flex;gap:4px;margin-bottom:24px;border-bottom:1.5px solid var(--cinza-claro)}
 .abas button{padding:10px 18px;border:none;background:none;font-size:.85rem;font-weight:700;color:var(--cinza-medio);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1.5px}
 .abas button.on{color:var(--teal);border-color:var(--teal)}
-.select-pergunta{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--cinza-claro);background:var(--branco);font-family:var(--body);font-size:.9rem;font-weight:600;color:var(--preto);margin-bottom:20px}
+.secao-titulo{font-family:var(--display);font-size:1.6rem;margin:36px 0 14px;color:var(--preto)}
+.secao-titulo:first-child{margin-top:0}
+.card-pergunta{margin-bottom:16px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:28px}
 .stat-card{background:var(--branco);border:1px solid var(--cinza-claro);border-radius:18px;padding:18px}
 .stat-card .num{font-family:var(--display);font-size:2.4rem;color:var(--teal);line-height:1}
