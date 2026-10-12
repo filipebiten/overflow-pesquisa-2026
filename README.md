@@ -36,16 +36,19 @@ em paralelo, pro Google Sheets (tabulação). Hospedado no GitHub Pages.
   satisfação média, médias por culto/logística, distribuição de faixa etária
   etc. Tem filtro pra ver só líderes ou só retirantes.
 
-## Configurar o Google Sheets (uma vez)
+## Google Sheets
 
-1. Abra a planilha de tabulação (já criada):
-   `https://docs.google.com/spreadsheets/d/1drU_S1UlxskQLTP0eM0jfejmB_3ernJTi43uhwwJMQk/edit`
-2. Extensões → Apps Script.
-3. Apague o conteúdo padrão e cole tudo de `apps-script/Code.gs`.
-4. Implantar → Nova implantação → tipo "App da Web". Executar como "Eu",
-   quem pode acessar "Qualquer pessoa". Implantar, copie a URL do Web App.
-5. Cole essa URL em `js/config.js`, na constante `SHEETS_WEBAPP_URL`, e
-   publique (commit + push).
+Já configurado (12/10/2026): projeto Apps Script "Overflow 2026 - Sync
+Sheets" vinculado à planilha
+`https://docs.google.com/spreadsheets/d/1drU_S1UlxskQLTP0eM0jfejmB_3ernJTi43uhwwJMQk/edit`,
+implantado como Web App ("Executar como: eu", "Quem pode acessar: qualquer
+pessoa"), URL colada em `js/config.js` (`SHEETS_WEBAPP_URL`). Testado com uma
+linha de teste na aba "Respostas" — apague essa linha antes do evento valer.
+
+Se precisar reimplantar depois de editar `Code.gs`: abra o projeto em
+script.google.com, cole o código novo, Implantar → Gerenciar implantações →
+editar (ícone de lápis) → Nova versão → Implantar. A URL não muda ao
+reimplantar uma versão existente.
 
 O segredo compartilhado (`SHEETS_SECRET` em `config.js` / `SEGREDO` no
 `Code.gs`) é só pra filtrar POSTs aleatórios — não protege dado sensível (a

@@ -9,7 +9,5 @@ const FIREBASE_CONFIG = {
   appId: "1:638021133423:web:45d259c8facc9b0d2ad99a",
 };
 
-// Preenchido depois de publicar o Apps Script (ver README). Enquanto vazio,
-// a sincronização com o Sheets fica silenciosamente desligada.
-const SHEETS_WEBAPP_URL = "";
+const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyRqoaVNKzuD5RD9bYoZTtEsDEZyRq_XCRw1B3BoW-EuZT0m-6nuQ1gv7DfEnn75PmW/exec";
 const SHEETS_SECRET = "overflow2026";
