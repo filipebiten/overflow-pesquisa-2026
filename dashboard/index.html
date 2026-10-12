@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — Pesquisa Overflow 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/estilo.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <img src="https://flow.1b.org.br/wp-content/uploads/2023/04/logo-flow-branca.png" alt="Rede Flow">
+    <span class="header-divider"></span>
+    <img src="https://ensino.1b.org.br/wp-content/uploads/2026/02/logo-pib-verde.png" alt="PIB Campo Grande" class="logo-pib">
+  </div>
+</header>
+
+<main class="dash">
+  <h1>Overflow 2026</h1>
+  <p class="sub">Resultados da pesquisa de satisfação, em tempo real</p>
+
+  <div class="filtros">
+    <button class="on" data-filtro="todos">Todos</button>
+    <button data-filtro="retirante">Só retirantes</button>
+    <button data-filtro="lideranca">Só liderança</button>
+  </div>
+
+  <div class="cards">
+    <div class="stat-card"><div class="num" id="total">—</div><div class="lbl">Respostas</div></div>
+    <div class="stat-card"><div class="num" id="nps">—</div><div class="lbl">NPS</div></div>
+    <div class="stat-card"><div class="num" id="satisfacao">—</div><div class="lbl">Satisfação (1–5)</div></div>
+  </div>
+
+  <div class="graficos">
+    <div class="grafico-card"><h3>Avaliação média por culto</h3><canvas id="graf-cultos"></canvas></div>
+    <div class="grafico-card"><h3>Avaliação média — estrutura e logística</h3><canvas id="graf-logistica"></canvas></div>
+    <div class="grafico-card"><h3>Faixa etária</h3><canvas id="graf-idade"></canvas></div>
+    <div class="grafico-card"><h3>Primeira vez em retiro</h3><canvas id="graf-primeira-vez"></canvas></div>
+    <div class="grafico-card"><h3>Expectativas atendidas</h3><canvas id="graf-expectativas"></canvas></div>
+  </div>
+
+  <div class="abertas">
+    <h3>Respostas abertas</h3>
+    <div id="lista-abertas"></div>
+  </div>
+</main>
+
+<footer class="footer">
+  <p>© 2026 Rede Flow</p>
+</footer>
+
+<script src="../js/config.js"></script>
+<script type="module" src="../js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "respostas": {
+      ".read": true,
+      "$id": {
+        ".write": "!data.exists() && newData.hasChildren(['tipo', 'enviadoEm'])",
+        ".validate": "newData.hasChildren(['tipo', 'enviadoEm'])"
+      }
+    }
+  }
+}
