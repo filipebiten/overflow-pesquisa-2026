@@ -18,8 +18,8 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     if (body.secret !== SEGREDO) return saida_({ ok: false, erro: "segredo inválido" });
 
-    var colunas = body.colunas || [];
-    var valores = body.valores || [];
+    var colunas = (body.colunas || []).map(escaparFormula_);
+    var valores = (body.valores || []).map(escaparFormula_);
 
     var ss = SpreadsheetApp.openById(SHEET_ID);
     var aba = ss.getSheetByName(NOME_ABA) || ss.insertSheet(NOME_ABA);
@@ -37,6 +37,12 @@ function doPost(e) {
     resposta = { ok: false, erro: String(err) };
   }
   return saida_(resposta);
+}
+
+/** Impede que resposta aberta vire fórmula (texto livre vindo de qualquer pessoa, sem sanitização). */
+function escaparFormula_(v) {
+  if (typeof v === "string" && /^[=+\-@]/.test(v)) return "'" + v;
+  return v;
 }
 
 function saida_(obj) {
