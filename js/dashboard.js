@@ -106,15 +106,96 @@ function render() {
   lista.innerHTML = resps.flatMap((r) => ABERTAS.map(([campo, rotulo]) => r[campo] ? `<div class="item"><b>${rotulo}</b>${String(r[campo]).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))}</div>` : "")).join("") || `<p style="color:var(--cinza-medio);font-size:.85rem">Nenhuma resposta aberta ainda.</p>`;
 }
 
+// ---------- aba "por pergunta" ----------
+const PERGUNTAS_SELECIONAVEIS = PESQUISA.perguntas.filter((q) => q.tipo !== "conteudo");
+const escPergunta = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+function montarSelectPerguntas() {
+  const select = document.getElementById("select-pergunta");
+  let secaoAtual = null, html = "";
+  PERGUNTAS_SELECIONAVEIS.forEach((q) => {
+    if (q.secao !== secaoAtual) {
+      if (secaoAtual !== null) html += "</optgroup>";
+      html += `<optgroup label="${escPergunta(q.secao || "Outras")}">`;
+      secaoAtual = q.secao;
+    }
+    html += `<option value="${q.id}">${escPergunta(q.pergunta)}</option>`;
+  });
+  html += "</optgroup>";
+  select.innerHTML = html;
+}
+
+function renderPergunta() {
+  const id = document.getElementById("select-pergunta").value;
+  const q = PERGUNTAS_SELECIONAVEIS.find((x) => x.id === id);
+  if (!q) return;
+  const resps = filtro === "todos" ? todas : todas.filter((r) => r.tipo === filtro);
+  const cardGrafico = document.getElementById("card-grafico-pergunta");
+  const cardLista = document.getElementById("card-lista-pergunta");
+  const lista = document.getElementById("lista-pergunta");
+  const tituloLista = document.getElementById("titulo-lista-pergunta");
+
+  if (q.tipo === "aberta") {
+    cardGrafico.style.display = "none";
+    cardLista.style.display = "block";
+    tituloLista.textContent = "Respostas";
+    const textos = resps.map((r) => r[q.id]).filter((v) => v && String(v).trim());
+    lista.innerHTML = textos.length
+      ? textos.map((t) => `<div class="item">${escPergunta(t)}</div>`).join("")
+      : `<p style="color:var(--cinza-medio);font-size:.85rem">Nenhuma resposta ainda.</p>`;
+    return;
+  }
+
+  cardGrafico.style.display = "block";
+
+  if (q.tipo === "escala_grade") {
+    const medias = q.itens.map((_, i) => +((mediaEscala(resps, q.id, i) || 0).toFixed(2)));
+    grafico("graf-pergunta", "bar", q.itens, medias, { indexAxis: "y" });
+    const motivos = [];
+    resps.forEach((r) => (r[q.id] || []).forEach((entry, i) => {
+      if (entry && typeof entry === "object" && entry.j && entry.j.trim()) motivos.push({ item: q.itens[i], texto: entry.j });
+    }));
+    cardLista.style.display = "block";
+    tituloLista.textContent = "Justificativas (nota 3 ou menos)";
+    lista.innerHTML = motivos.length
+      ? motivos.map((m) => `<div class="item"><b>${escPergunta(m.item)}</b>${escPergunta(m.texto)}</div>`).join("")
+      : `<p style="color:var(--cinza-medio);font-size:.85rem">Nenhuma justificativa ainda.</p>`;
+    return;
+  }
+
+  cardLista.style.display = "none";
+  const contagem = contar(resps, q.id);
+  let labels;
+  if (q.opcoes) labels = q.opcoes;
+  else if (q.tipo === "nps") labels = Array.from({ length: 11 }, (_, n) => String(n));
+  else if (q.tipo === "estrela") labels = ["1", "2", "3", "4", "5"];
+  else labels = Object.keys(contagem);
+  grafico("graf-pergunta", "bar", labels, labels.map((l) => contagem[l] || 0), { scales: { x: { beginAtZero: true } } });
+}
+
 document.querySelectorAll(".filtros button").forEach((b) => b.onclick = () => {
   document.querySelectorAll(".filtros button").forEach((x) => x.classList.remove("on"));
   b.classList.add("on");
   filtro = b.dataset.filtro;
   render();
+  if (document.getElementById("aba-pergunta").style.display !== "none") renderPergunta();
 });
+
+document.querySelectorAll(".abas button").forEach((b) => b.onclick = () => {
+  document.querySelectorAll(".abas button").forEach((x) => x.classList.remove("on"));
+  b.classList.add("on");
+  const ehGeral = b.dataset.aba === "geral";
+  document.getElementById("aba-geral").style.display = ehGeral ? "block" : "none";
+  document.getElementById("aba-pergunta").style.display = ehGeral ? "none" : "block";
+  if (!ehGeral) renderPergunta();
+});
+
+montarSelectPerguntas();
+document.getElementById("select-pergunta").onchange = renderPergunta;
 
 onValue(ref(db, "respostas"), (snap) => {
   const val = snap.val() || {};
   todas = Object.values(val);
   render();
+  if (document.getElementById("aba-pergunta").style.display !== "none") renderPergunta();
 });
