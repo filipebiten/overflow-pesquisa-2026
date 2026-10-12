@@ -158,7 +158,7 @@ export async function init(ctx) {
     const ultimo = st.idx === lista.length - 1 && (q.tipo !== "escala_grade" || st.sub === q.itens.length - 1);
     if (ultimo) textoProx = "Enviar";
 
-    el.innerHTML = `<div class="prog"><i style="width:${pct}%"></i></div>
+    el.innerHTML = `<div class="prog"><i style="transform:scaleX(${pct / 100})"></i></div>
       <div class="corpo-cel">${corpo}</div>
       <div class="rodape-cel">${st.idx > 0 || st.sub > 0 ? `<button class="btn btn-out" id="volta">Voltar</button>` : ""}${mostrarBotao ? `<button class="btn btn-flow" id="prox" ${podeAvancar ? "" : "disabled"}>${textoProx}</button>` : ""}</div>`;
 
