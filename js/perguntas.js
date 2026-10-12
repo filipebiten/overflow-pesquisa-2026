@@ -3,9 +3,11 @@
 // Fonte única das perguntas. Editar aqui, nada de texto espalhado no código.
 //
 // Tipos:
-//   unica         → uma opção
-//   multipla      → várias opções (sem exclusão mútua, sem limite)
-//   escala_grade  → vários itens avaliados 1–5 (+ opção "não sei/não participei")
+//   conteudo      → tela informativa (sem resposta), botão "Continuar"
+//   unica         → uma opção (avança sozinho ao escolher)
+//   multipla      → várias opções; exclusivas: [...] limpa as outras ao marcar
+//   escala_grade  → vários itens avaliados 1–5 (+ opção "não sei/não participei").
+//                   Nota ≤ 3 abre campo opcional de justificativa.
 //   estrela       → uma avaliação única 1–5 (estrelas)
 //   nps           → escala única 0–10
 //   aberta        → texto livre (longa: true = textarea), sempre opcional
@@ -47,11 +49,20 @@ function culto(num, dados) {
   ];
 }
 
+const LIDER_MOSTRAR_SE = { pergunta: "tipo_participante", opcoes: ["Participei liderando ou organizando uma equipe"] };
+
 const PESQUISA = {
   id: "overflow2026",
   titulo: "Pesquisa de satisfação — Overflow 2026",
   encerramento: "Valeu por contar como foi o seu Overflow. Isso ajuda a Flow a ir ainda mais fundo no ano que vem.",
   perguntas: [
+    // ---------- boas-vindas ----------
+    {
+      id: "intro", tipo: "conteudo", secao: "Overflow 2026",
+      titulo: "Antes de começar",
+      texto: "Essa pesquisa leva de 8 a 10 minutos. Você pode fechar e voltar depois — suas respostas ficam salvas neste aparelho até o envio final.",
+    },
+
     // ---------- filtro ----------
     {
       id: "tipo_participante", numero: true, secao: "Antes de começar", tipo: "unica",
@@ -59,23 +70,51 @@ const PESQUISA = {
       opcoes: ["Participei como retirante", "Participei liderando ou organizando uma equipe"],
     },
     {
-      id: "equipes_lideranca", numero: true, secao: "Antes de começar", tipo: "multipla",
+      id: "equipes_lideranca", numero: true, secao: "Como voluntário(a)", tipo: "multipla",
       pergunta: "Em qual (is) equipe(s) você serviu?",
       instrucao: "Marque quantas forem o caso.",
       opcoes: EQUIPES,
-      mostrarSe: { pergunta: "tipo_participante", opcoes: ["Participei liderando ou organizando uma equipe"] },
+      mostrarSe: LIDER_MOSTRAR_SE,
     },
 
-    // ---------- dados básicos ----------
+    // ---------- bloco exclusivo da liderança (vem primeiro pra quem é líder) ----------
+    { id: "lider_experiencia", numero: true, secao: "Como voluntário(a)", tipo: "estrela", pergunta: "Como foi a experiência como voluntário(a)?", mostrarSe: LIDER_MOSTRAR_SE },
+    { id: "lider_orientado", numero: true, secao: "Como voluntário(a)", tipo: "estrela", pergunta: "Sentiu que foi bem orientado(a) sobre sua função?", mostrarSe: LIDER_MOSTRAR_SE },
+    { id: "lider_gostou_equipe", numero: true, secao: "Como voluntário(a)", tipo: "estrela", pergunta: "Você gostou de servir na sua equipe?", mostrarSe: LIDER_MOSTRAR_SE },
+    { id: "lider_avaliacao_equipe", numero: true, secao: "Como voluntário(a)", tipo: "estrela", pergunta: "Como você avalia o funcionamento da sua equipe (organização, comunicação, clima)?", mostrarSe: LIDER_MOSTRAR_SE },
     {
-      id: "dias", numero: true, secao: "Sobre sua participação", tipo: "unica",
-      pergunta: "Em quais dias você participou?",
-      opcoes: ["Todos", "Sexta e sábado", "Sábado e domingo", "Apenas um dia"],
+      id: "lider_conflito", numero: true, secao: "Como voluntário(a)", tipo: "unica",
+      pergunta: "Teve algum conflito dentro da sua equipe?",
+      opcoes: ["Sim", "Não"],
+      mostrarSe: LIDER_MOSTRAR_SE,
+    },
+    {
+      id: "lider_conflito_detalhe", secao: "Como voluntário(a)", tipo: "aberta", longa: true,
+      pergunta: "Conte um pouco o que houve (sem precisar citar nomes, se preferir).",
+      mostrarSe: { pergunta: "lider_conflito", opcoes: ["Sim"] },
+    },
+    { id: "lider_sugestoes", secao: "Como voluntário(a)", tipo: "aberta", longa: true, pergunta: "Sugestões como voluntário(a)?", mostrarSe: LIDER_MOSTRAR_SE },
+    { id: "lider_servir_novamente", numero: true, secao: "Como voluntário(a)", tipo: "unica", pergunta: "Gostaria de servir novamente no próximo ano?", opcoes: ["Sim", "Talvez", "Não"], mostrarSe: LIDER_MOSTRAR_SE },
+    {
+      id: "lider_equipe_desejada", numero: true, secao: "Como voluntário(a)", tipo: "multipla",
+      pergunta: "Em qual equipe gostaria de servir?",
+      instrucao: "Marque quantas forem o caso.",
+      opcoes: EQUIPES,
+      mostrarSe: LIDER_MOSTRAR_SE,
+    },
+
+    // ---------- dados básicos (todo mundo) ----------
+    {
+      id: "dias", numero: true, secao: "Sobre sua participação", tipo: "multipla",
+      pergunta: "Em quais dias e períodos você participou?",
+      instrucao: "Marque quantos forem o caso, ou escolha Todos.",
+      opcoes: ["Todos", "Sexta à noite", "Sábado de manhã", "Sábado à tarde", "Sábado à noite", "Domingo de manhã"],
+      exclusivas: ["Todos"],
     },
     {
       id: "dormiu", numero: true, secao: "Sobre sua participação", tipo: "unica",
-      pergunta: "Dormiu no retiro ou foi e voltou?",
-      opcoes: ["Dormi no retiro", "Fui e voltei"],
+      pergunta: "Dormiu no retiro ou não?",
+      opcoes: ["Dormi no retiro", "Não dormi nenhum dia"],
     },
     {
       id: "idade", numero: true, secao: "Sobre você", tipo: "unica",
@@ -101,6 +140,11 @@ const PESQUISA = {
 
     // ---------- satisfação geral ----------
     {
+      id: "valor_retiro", numero: true, secao: "Satisfação geral", tipo: "unica",
+      pergunta: "Como você avalia o custo-benefício do valor pago pelo Overflow?",
+      opcoes: ["Caro, não valeu a pena", "Caro, mas valeu a pena", "Preço justo pelo que recebi", "Barato pelo que recebi"],
+    },
+    {
       id: "nps", numero: true, secao: "Satisfação geral", tipo: "nps",
       pergunta: "De 0 a 10, qual a probabilidade de você recomendar o Overflow a um amigo?",
       instrucao: "0 = nunca recomendaria · 10 = com certeza recomendaria",
@@ -121,7 +165,12 @@ const PESQUISA = {
     },
 
     // ---------- cultos ----------
-    ...culto(1, { quando: "sexta à noite", pregacao: "Pregação: Pr. Filipe", direcao: "Anahy e Rafa" }),
+    {
+      id: "intro_cultos", tipo: "conteudo", secao: "Vamos avaliar por culto",
+      titulo: "Vamos avaliar por culto",
+      texto: "Agora, pra cada um dos 4 cultos, avalie alguns pontos e conte o que mais te marcou.",
+    },
+    ...culto(1, { quando: "sexta à noite", pregacao: "Pregação: Pr. Filipe Bittencourt", direcao: "Anahy e Rafa" }),
     ...culto(2, { quando: "sábado de manhã", pregacao: "Pregação: Pr. Eli e Pra. Suene", direcao: "Luan e Fran" }),
     ...culto(3, { quando: "sábado à noite", pregacao: "Pregação: Pr. Eli e Pra. Suene", direcao: "Mari" }),
     ...culto(4, { quando: "domingo de manhã", pregacao: "Pregação: Yuri Breder", direcao: "Gabi e Luiz" }),
@@ -151,9 +200,10 @@ const PESQUISA = {
       id: "momentos", numero: true, secao: "Momentos especiais", tipo: "escala_grade",
       pergunta: "Avalie os momentos especiais do Overflow",
       itens: [
-        "Gincana Bíblica Indoor (sexta à noite)",
-        "Gincanas do sábado (Circuito Físico / Batalha Naval)",
-        "Pega-Bandeira Noturno",
+        "Montagem das Bandeiras (sexta à noite)",
+        "Gincana Bíblica Indoor (sábado de manhã)",
+        "Circuito Físico / Batalha Naval (sábado à tarde)",
+        "Pega-Bandeira Noturno (sábado à noite)",
         "Devocionais (sábado e domingo de manhã)",
       ],
       rotulos: ESCALA_QUALIDADE, naoSei: "Não participei",
@@ -179,35 +229,5 @@ const PESQUISA = {
     { id: "aberta_deu_certo", secao: "Pra fechar", tipo: "aberta", longa: true, pergunta: "O que deu muito certo e precisa permanecer?" },
     { id: "aberta_temas", secao: "Pra fechar", tipo: "aberta", longa: true, pergunta: "Temas, convidados ou ideias para o próximo ano?" },
     { id: "aberta_outra_coisa", secao: "Pra fechar", tipo: "aberta", longa: true, pergunta: "Algo importante que não perguntamos?" },
-
-    // ---------- extras só pra liderança ----------
-    {
-      id: "lider_experiencia", numero: true, secao: "Como voluntário(a)", tipo: "estrela",
-      pergunta: "Como foi a experiência como voluntário(a)?",
-      mostrarSe: { pergunta: "tipo_participante", opcoes: ["Participei liderando ou organizando uma equipe"] },
-    },
-    {
-      id: "lider_orientado", numero: true, secao: "Como voluntário(a)", tipo: "estrela",
-      pergunta: "Sentiu que foi bem orientado(a) sobre sua função?",
-      mostrarSe: { pergunta: "tipo_participante", opcoes: ["Participei liderando ou organizando uma equipe"] },
-    },
-    {
-      id: "lider_sugestoes", secao: "Como voluntário(a)", tipo: "aberta", longa: true,
-      pergunta: "Sugestões como voluntário(a)?",
-      mostrarSe: { pergunta: "tipo_participante", opcoes: ["Participei liderando ou organizando uma equipe"] },
-    },
-    {
-      id: "lider_servir_novamente", numero: true, secao: "Como voluntário(a)", tipo: "unica",
-      pergunta: "Gostaria de servir novamente no próximo ano?",
-      opcoes: ["Sim", "Talvez", "Não"],
-      mostrarSe: { pergunta: "tipo_participante", opcoes: ["Participei liderando ou organizando uma equipe"] },
-    },
-    {
-      id: "lider_equipe_desejada", numero: true, secao: "Como voluntário(a)", tipo: "multipla",
-      pergunta: "Em qual equipe gostaria de servir?",
-      instrucao: "Marque quantas forem o caso.",
-      opcoes: EQUIPES,
-      mostrarSe: { pergunta: "tipo_participante", opcoes: ["Participei liderando ou organizando uma equipe"] },
-    },
   ],
 };

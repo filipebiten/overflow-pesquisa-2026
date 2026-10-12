@@ -15,6 +15,10 @@ function visiveis(ans) {
   });
 }
 
+// Itens de escala_grade guardam "ns", null, ou { v: 1-5, j: "justificativa opcional" }.
+function valorDeEscala(entry) { return entry && typeof entry === "object" ? entry.v : entry; }
+function justificativaDeEscala(entry) { return entry && typeof entry === "object" ? entry.j || "" : ""; }
+
 function carregarRascunho() {
   try { return JSON.parse(localStorage.getItem(CHAVE_RASCUNHO) || "null"); } catch (_) { return null; }
 }
@@ -35,11 +39,14 @@ function marcarEnviado() {
 function colunasParaSheets(ans) {
   const linha = [];
   PESQUISA.perguntas.forEach((q) => {
+    if (q.tipo === "conteudo") return;
     if (q.tipo === "escala_grade") {
       const arr = ans[q.id] || [];
       q.itens.forEach((item, i) => {
-        const v = arr[i];
-        linha.push({ coluna: `${q.pergunta} — ${item}`, valor: v === "ns" ? q.naoSei : v == null ? "" : String(v) });
+        const entry = arr[i];
+        const v = valorDeEscala(entry);
+        linha.push({ coluna: `${q.pergunta} — ${item}`, valor: entry === "ns" ? q.naoSei : v == null ? "" : String(v) });
+        linha.push({ coluna: `${q.pergunta} — ${item} — motivo (se nota baixa)`, valor: justificativaDeEscala(entry) });
       });
       return;
     }
@@ -100,17 +107,21 @@ export async function init(ctx) {
     const numeradas = lista.filter((x) => x.numero).length;
     const feitas = lista.slice(0, st.idx + 1).filter((x) => x.numero).length;
     const pct = Math.round((feitas / Math.max(1, numeradas)) * 100);
-    let podeAvancar = true, textoProx = "Próxima";
+    let podeAvancar = true, textoProx = "Próxima", mostrarBotao = true;
     const atual = st.ans[q.id];
 
     let corpo = "";
     const cabecalho = q.secao ? `<span class="tag-line">${esc(q.secao)}</span>` : "";
-    const contagem = q.numero ? `<div class="contagem">Pergunta ${feitas} de ${numeradas}</div>` : `<div class="contagem">Complemento</div>`;
+    const contagem = q.tipo === "conteudo" ? "" : (q.numero ? `<div class="contagem">Pergunta ${feitas} de ${numeradas}</div>` : `<div class="contagem">Complemento</div>`);
 
-    if (q.tipo === "unica") {
+    if (q.tipo === "conteudo") {
+      corpo = `${cabecalho}<h2 class="perg">${esc(q.titulo)}</h2><p class="instr">${esc(q.texto)}</p>`;
+      textoProx = "Continuar";
+    } else if (q.tipo === "unica") {
       corpo = `${cabecalho}${contagem}<h2 class="perg">${esc(q.pergunta)}</h2>${q.instrucao ? `<p class="instr">${esc(q.instrucao)}</p>` : ""}
         <div class="opcs ${q.opcoes.length > 4 ? "compacta" : ""}">` + q.opcoes.map((o) => `<button class="opc ${atual === o ? "on" : ""}" data-o="${esc(o)}">${esc(o)}</button>`).join("") + `</div>`;
       podeAvancar = atual != null;
+      mostrarBotao = false; // avança sozinho ao escolher
     } else if (q.tipo === "multipla") {
       const sel = atual || [];
       corpo = `${cabecalho}${contagem}<h2 class="perg">${esc(q.pergunta)}</h2>${q.instrucao ? `<p class="instr">${esc(q.instrucao)}</p>` : ""}
@@ -118,14 +129,17 @@ export async function init(ctx) {
       podeAvancar = sel.length > 0;
     } else if (q.tipo === "escala_grade") {
       const arr = atual || Array(q.itens.length).fill(null);
-      const v = arr[st.sub];
+      const entry = arr[st.sub];
+      const v = valorDeEscala(entry);
+      const j = justificativaDeEscala(entry);
       corpo = `${cabecalho}<div class="contagem">Item ${st.sub + 1} de ${q.itens.length}</div>
-        <h2 class="perg">${esc(q.pergunta)}</h2>
-        <div class="item-escala">${esc(q.itens[st.sub])}</div>
+        <h2 class="perg">${esc(q.itens[st.sub])}</h2>
+        <p class="instr">${esc(q.pergunta)}</p>
         <div class="escala">` + [1, 2, 3, 4, 5].map((n) => `<button class="opc ${v === n ? "on" : ""}" data-n="${n}">${n}</button>`).join("") + `</div>
         <div class="rot-escala">${v && v !== "ns" ? esc(q.rotulos[v]) : "&nbsp;"}</div>
-        <button class="opc naosei ${v === "ns" ? "on" : ""}" data-n="ns">${esc(q.naoSei)}</button>`;
-      podeAvancar = v != null;
+        <button class="opc naosei ${entry === "ns" ? "on" : ""}" data-n="ns">${esc(q.naoSei)}</button>
+        ${typeof v === "number" && v <= 3 ? `<textarea id="just" class="justificativa" maxlength="300" placeholder="Por que você avaliou assim? (opcional)">${esc(j)}</textarea>` : ""}`;
+      podeAvancar = entry != null;
     } else if (q.tipo === "estrela") {
       corpo = `${cabecalho}${contagem}<h2 class="perg">${esc(q.pergunta)}</h2>${q.instrucao ? `<p class="instr">${esc(q.instrucao)}</p>` : ""}
         <div class="estrelas">` + [1, 2, 3, 4, 5].map((n) => `<button class="estrela ${atual >= n ? "on" : ""}" data-n="${n}">★</button>`).join("") + `</div>`;
@@ -146,23 +160,45 @@ export async function init(ctx) {
 
     el.innerHTML = `<div class="prog"><i style="width:${pct}%"></i></div>
       <div class="corpo-cel">${corpo}</div>
-      <div class="rodape-cel">${st.idx > 0 || st.sub > 0 ? `<button class="btn btn-out" id="volta">Voltar</button>` : ""}<button class="btn btn-flow" id="prox" ${podeAvancar ? "" : "disabled"}>${textoProx}</button></div>`;
+      <div class="rodape-cel">${st.idx > 0 || st.sub > 0 ? `<button class="btn btn-out" id="volta">Voltar</button>` : ""}${mostrarBotao ? `<button class="btn btn-flow" id="prox" ${podeAvancar ? "" : "disabled"}>${textoProx}</button>` : ""}</div>`;
+
+    function avancar() {
+      if (q.tipo === "escala_grade" && st.sub < q.itens.length - 1) { st.sub++; salvarRascunho(st); render(); return; }
+      // limpa respostas condicionais que deixaram de valer
+      PESQUISA.perguntas.filter((x) => x.mostrarSe).forEach((x) => {
+        if (!visiveis(st.ans).includes(x)) delete st.ans[x.id];
+      });
+      const nova = visiveis(st.ans);
+      if (st.idx >= nova.length - 1) { concluir(); return; }
+      st.idx++; st.sub = 0;
+      salvarRascunho(st); render();
+    }
 
     el.querySelectorAll(".opc[data-o]").forEach((b) => (b.onclick = () => {
       const o = b.dataset.o;
-      if (q.tipo === "unica") { st.ans[q.id] = o; }
-      else {
-        let sel = (st.ans[q.id] || []).slice();
-        sel = sel.includes(o) ? sel.filter((x) => x !== o) : [...sel, o];
-        st.ans[q.id] = sel.length ? sel : undefined;
+      if (q.tipo === "unica") {
+        st.ans[q.id] = o;
+        salvarRascunho(st); render();
+        setTimeout(avancar, 180);
+        return;
       }
+      let sel = (st.ans[q.id] || []).slice();
+      if (sel.includes(o)) sel = sel.filter((x) => x !== o);
+      else {
+        const ex = q.exclusivas || [];
+        if (ex.includes(o)) sel = [o];
+        else { sel = sel.filter((x) => !ex.includes(x)); sel.push(o); }
+      }
+      st.ans[q.id] = sel.length ? sel : undefined;
       salvarRascunho(st); render();
     }));
     el.querySelectorAll(".opc[data-n]").forEach((b) => (b.onclick = () => {
       const n = b.dataset.n === "ns" ? "ns" : +b.dataset.n;
       if (q.tipo === "escala_grade") {
         const arr = (st.ans[q.id] || Array(q.itens.length).fill(null)).slice();
-        arr[st.sub] = n; st.ans[q.id] = arr;
+        const jPrevia = justificativaDeEscala(arr[st.sub]);
+        arr[st.sub] = n === "ns" ? "ns" : { v: n, j: jPrevia };
+        st.ans[q.id] = arr;
       } else {
         st.ans[q.id] = n;
       }
@@ -174,7 +210,16 @@ export async function init(ctx) {
     const t = document.getElementById("txt");
     if (t) t.oninput = () => {
       st.ans[q.id] = t.value;
-      document.getElementById("prox").textContent = t.value.trim() ? (ultimo ? "Enviar" : "Próxima") : "Pular";
+      const btn = document.getElementById("prox");
+      if (btn) btn.textContent = t.value.trim() ? (ultimo ? "Enviar" : "Próxima") : "Pular";
+      salvarRascunho(st);
+    };
+    const tj = document.getElementById("just");
+    if (tj) tj.oninput = () => {
+      const arr = (st.ans[q.id] || Array(q.itens.length).fill(null)).slice();
+      const entry = arr[st.sub];
+      if (entry && typeof entry === "object") arr[st.sub] = { ...entry, j: tj.value };
+      st.ans[q.id] = arr;
       salvarRascunho(st);
     };
     const v = document.getElementById("volta");
@@ -187,17 +232,8 @@ export async function init(ctx) {
       }
       salvarRascunho(st); render();
     };
-    document.getElementById("prox").onclick = () => {
-      if (q.tipo === "escala_grade" && st.sub < q.itens.length - 1) { st.sub++; salvarRascunho(st); render(); return; }
-      // limpa respostas condicionais que deixaram de valer
-      PESQUISA.perguntas.filter((x) => x.mostrarSe).forEach((x) => {
-        if (!visiveis(st.ans).includes(x)) delete st.ans[x.id];
-      });
-      const nova = visiveis(st.ans);
-      if (st.idx >= nova.length - 1) { concluir(); return; }
-      st.idx++; st.sub = 0;
-      salvarRascunho(st); render();
-    };
+    const prox = document.getElementById("prox");
+    if (prox) prox.onclick = avancar;
   }
 
   render();

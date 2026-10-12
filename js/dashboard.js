@@ -27,8 +27,11 @@ let todas = [];
 let filtro = "todos";
 const charts = {};
 
+// Itens de escala_grade guardam "ns", null, ou { v: 1-5, j: "..." } (ver js/responder.js).
+function valorDeEscala(entry) { return entry && typeof entry === "object" ? entry.v : entry; }
+
 function mediaEscala(resps, campo, indice) {
-  const vals = resps.map((r) => (r[campo] || [])[indice]).filter((v) => typeof v === "number");
+  const vals = resps.map((r) => valorDeEscala((r[campo] || [])[indice])).filter((v) => typeof v === "number");
   if (!vals.length) return null;
   return vals.reduce((a, b) => a + b, 0) / vals.length;
 }

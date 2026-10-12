@@ -22,6 +22,7 @@ button{font-family:inherit}
 .header{background:var(--preto);padding:16px 0}
 .header-inner{max-width:520px;margin:0 auto;padding:0 20px;display:flex;justify-content:center;align-items:center;gap:14px}
 .header-inner img{height:28px;width:auto;object-fit:contain;display:block}
+.header-inner .logo-flow{height:34px}
 .header-inner .logo-pib{filter:brightness(0) invert(1);max-width:90px}
 .header-divider{width:1px;height:20px;background:rgba(255,255,255,.2)}
 
@@ -34,8 +35,6 @@ main{max-width:520px;margin:0 auto;padding:24px 20px 60px;min-height:70vh;displa
 .contagem{font-size:.75rem;color:var(--cinza-medio);font-weight:600;letter-spacing:.5px;margin-bottom:6px}
 .perg{font-family:var(--display);font-size:clamp(1.6rem,6vw,2.2rem);line-height:1.05;letter-spacing:-.01em;color:var(--preto);margin-bottom:14px}
 .instr{font-size:.85rem;color:var(--cinza);margin-bottom:16px}
-.item-escala{font-weight:700;font-size:1.05rem;margin:10px 0 18px;color:var(--preto)}
-
 .opcs{display:flex;flex-direction:column;gap:10px;margin-top:4px}
 .opcs.compacta{flex-direction:column}
 .opc{display:block;width:100%;text-align:left;padding:16px 18px;border-radius:16px;border:1.5px solid var(--cinza-claro);background:var(--branco);color:var(--preto);font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s}
@@ -57,6 +56,7 @@ main{max-width:520px;margin:0 auto;padding:24px 20px 60px;min-height:70vh;displa
 
 textarea,input.txt{width:100%;border:1.5px solid var(--cinza-claro);border-radius:16px;padding:16px;font-family:var(--body);font-size:.95rem;background:var(--branco);color:var(--preto);resize:vertical}
 textarea{min-height:140px}
+textarea.justificativa{min-height:70px;margin-top:4px;font-size:.85rem}
 textarea:focus,input.txt:focus{outline:none;border-color:var(--teal)}
 
 .rodape-cel{display:flex;gap:10px;margin-top:28px}
