@@ -4,6 +4,8 @@ import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12
 const fbApp = initializeApp(FIREBASE_CONFIG);
 const db = getDatabase(fbApp);
 
+Chart.register(ChartDataLabels);
+
 const CULTOS = [
   { id: "culto1_notas", titulo: "Culto 1 — Sexta" },
   { id: "culto2_notas", titulo: "Culto 2 — Sáb. manhã" },
@@ -86,15 +88,28 @@ function contar(resps, campo) {
   return mapa;
 }
 
-function grafico(id, tipo, labels, dados, opts) {
+function grafico(id, tipo, labels, dados, opts, pct) {
   const ctx = document.getElementById(id).getContext("2d");
   if (charts[id]) charts[id].destroy();
+  const total = dados.reduce((a, b) => a + (typeof b === "number" ? b : 0), 0);
+  const datalabels = pct ? {
+    display: true,
+    color: tipo === "pie" ? "#fff" : PRETO,
+    textStrokeColor: tipo === "pie" ? "rgba(0,0,0,.45)" : undefined,
+    textStrokeWidth: tipo === "pie" ? 3 : 0,
+    font: { family: "Plus Jakarta Sans", weight: "600", size: 11 },
+    anchor: tipo === "bar" ? "end" : "center",
+    align: tipo === "bar" ? "end" : "center",
+    offset: tipo === "bar" ? 4 : 0,
+    formatter: (v) => total ? `${Math.round((v / total) * 100)}%` : "",
+  } : { display: false };
   charts[id] = new Chart(ctx, {
     type: tipo,
     data: { labels, datasets: [{ data: dados, backgroundColor: tipo === "bar" ? TEAL : PALETA, borderRadius: tipo === "bar" ? 8 : 0, borderWidth: tipo === "pie" ? 2 : 0, borderColor: "#fff" }] },
     options: Object.assign({
       responsive: true,
-      plugins: { legend: { display: tipo === "pie", position: "bottom", labels: { font: { family: "Plus Jakarta Sans" } } } },
+      layout: pct && tipo === "bar" && !(opts && opts.indexAxis === "y") ? { padding: { top: 20 } } : undefined,
+      plugins: { legend: { display: tipo === "pie", position: "bottom", labels: { font: { family: "Plus Jakarta Sans" } } }, datalabels },
       scales: tipo === "bar" ? { x: { beginAtZero: true, max: 5 } } : undefined,
     }, opts || {}),
   });
@@ -145,11 +160,11 @@ function render() {
 
   // faixa etária
   const idades = contar(resps, "idade");
-  grafico("graf-idade", "pie", Object.keys(idades), Object.values(idades));
+  grafico("graf-idade", "pie", Object.keys(idades), Object.values(idades), null, true);
 
   // primeira vez em retiro
   const primeiraVez = contar(resps, "primeira_vez_retiro");
-  grafico("graf-primeira-vez", "pie", Object.keys(primeiraVez), Object.values(primeiraVez));
+  grafico("graf-primeira-vez", "pie", Object.keys(primeiraVez), Object.values(primeiraVez), null, true);
 
   // primeira vez no Overflow (quem nunca foi em retiro nenhum conta como "Sim" aqui também)
   const primeiraOverflow = { Sim: 0, Não: 0 };
@@ -157,22 +172,22 @@ function render() {
     const v = r.primeira_vez_retiro === "Sim, nunca fui em nenhum retiro" ? "Sim" : r.primeira_vez_overflow;
     if (v === "Sim" || v === "Não") primeiraOverflow[v]++;
   });
-  grafico("graf-primeira-overflow", "pie", Object.keys(primeiraOverflow), Object.values(primeiraOverflow));
+  grafico("graf-primeira-overflow", "pie", Object.keys(primeiraOverflow), Object.values(primeiraOverflow), null, true);
 
   // expectativas
   const expect = contar(resps, "expectativas");
   const ordemExpect = ["Muito abaixo", "Abaixo", "Atendeu", "Superou"].filter((k) => expect[k]);
-  grafico("graf-expectativas", "bar", ordemExpect, ordemExpect.map((k) => expect[k]), { scales: { x: { beginAtZero: true } } });
+  grafico("graf-expectativas", "bar", ordemExpect, ordemExpect.map((k) => expect[k]), { scales: { x: { beginAtZero: true } } }, true);
 
   // participaria novamente
   const participaria = contar(resps, "participaria_novamente");
   const ordemParticiparia = ["Sim", "Talvez", "Não"].filter((k) => participaria[k]);
-  grafico("graf-participaria", "pie", ordemParticiparia, ordemParticiparia.map((k) => participaria[k]));
+  grafico("graf-participaria", "pie", ordemParticiparia, ordemParticiparia.map((k) => participaria[k]), null, true);
 
   // custo-benefício do valor pago
   const valorRetiro = contar(resps, "valor_retiro");
   const ordemValor = VALOR_RETIRO_ORDEM.filter((k) => valorRetiro[k]);
-  grafico("graf-valor-retiro", "bar", ordemValor, ordemValor.map((k) => valorRetiro[k]), { scales: { x: { beginAtZero: true } } });
+  grafico("graf-valor-retiro", "bar", ordemValor, ordemValor.map((k) => valorRetiro[k]), { scales: { x: { beginAtZero: true } } }, true);
 
   // impacto espiritual (concordância média por item)
   const mediasImpacto = IMPACTO_ITENS.map((_, i) => +((mediaEscala(resps, "impacto", i) || 0).toFixed(2)));
@@ -238,7 +253,7 @@ function renderTodasPerguntas() {
     else if (q.tipo === "nps") labels = Array.from({ length: 11 }, (_, n) => String(n));
     else if (q.tipo === "estrela") labels = ["1", "2", "3", "4", "5"];
     else labels = Object.keys(contagem);
-    grafico(`graf-q-${q.id}`, "bar", labels, labels.map((l) => contagem[l] || 0), { scales: { x: { beginAtZero: true } } });
+    grafico(`graf-q-${q.id}`, "bar", labels, labels.map((l) => contagem[l] || 0), { scales: { x: { beginAtZero: true } } }, true);
   });
 }
 
