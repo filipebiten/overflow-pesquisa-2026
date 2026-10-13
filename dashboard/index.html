@@ -37,15 +37,22 @@
       <div class="stat-card"><div class="num" id="total">—</div><div class="lbl">Respostas</div></div>
       <div class="stat-card"><div class="num" id="nps">—</div><div class="lbl">NPS</div></div>
       <div class="stat-card"><div class="num" id="satisfacao">—</div><div class="lbl">Satisfação (1–5)</div></div>
+      <div class="stat-card"><div class="num" id="gincanas">—</div><div class="lbl">Gincanas (1–5)</div></div>
     </div>
 
     <div class="graficos">
       <div class="grafico-card"><h3>Avaliação média por culto</h3><canvas id="graf-cultos"></canvas></div>
+      <div class="grafico-card"><h3>Avaliação média — momentos do culto</h3><canvas id="graf-momentos-culto"></canvas></div>
       <div class="grafico-card"><h3>Avaliação média — estrutura e logística</h3><canvas id="graf-logistica"></canvas></div>
       <div class="grafico-card"><h3>Faixa etária</h3><canvas id="graf-idade"></canvas></div>
       <div class="grafico-card"><h3>Primeira vez em retiro</h3><canvas id="graf-primeira-vez"></canvas></div>
       <div class="grafico-card"><h3>Primeira vez no Overflow</h3><canvas id="graf-primeira-overflow"></canvas></div>
       <div class="grafico-card"><h3>Expectativas atendidas</h3><canvas id="graf-expectativas"></canvas></div>
+    </div>
+
+    <div class="grafico-card">
+      <h3>Nuvem de palavras — respostas abertas</h3>
+      <div id="nuvem-palavras" style="display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:baseline;justify-content:center;padding:.5rem 0"></div>
     </div>
 
     <div class="abertas">
