@@ -12,8 +12,6 @@ const CULTOS = [
 ];
 const LOGISTICA_ITENS = ["Check-in", "Decoração", "Kit", "Quartos", "Banheiros", "Alimentação", "Comunicação", "Dinâmicas", "Áudio", "Mídia", "Segurança", "Hospitalidade"];
 const MOMENTOS_CULTO = ["Louvor", "Palavra/Ministração", "Direção/Fluxo do culto", "Ambiente espiritual/Intercessão", "Duração/Tempo"];
-const CAMPOS_NUVEM = ["aberta_deus_falou", "aberta_adicionar", "aberta_nao_funcionou", "aberta_deu_certo"];
-const STOPWORDS = new Set(["de","a","o","que","e","do","da","em","um","uma","os","as","para","com","não","por","mais","dos","como","mas","ao","das","foi","ser","está","tá","só","já","pra","muito","isso","essa","esse","meu","minha","seus","suas","seu","sua","eu","se","na","no","nos","nas","foram","era","são","dia","dias","bem","mim","nós","você","vocês","ter","tem","têm","tive","teve","tudo","tão","mesmo","entre","sem","depois","antes","quando","onde","qual","quais","pelo","pela","pelos","pelas","até","aos","às","num","numa","outro","outra","outros","outras","cada","todo","toda","todos","todas","algo","alguem","alguém"]);
 const ABERTAS = [
   ["aberta_deus_falou", "Algo que Deus falou"],
   ["aberta_adicionar", "O que adicionar"],
@@ -74,30 +72,6 @@ function mediaGincanas(resps) {
     if (typeof r.momento_batalha_nota === "number") vals.push(r.momento_batalha_nota);
   });
   return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-}
-
-function nuvemPalavras(resps) {
-  const freq = {};
-  resps.forEach((r) => CAMPOS_NUVEM.forEach((campo) => {
-    const texto = r[campo];
-    if (!texto) return;
-    (String(texto).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").match(/[a-z]{3,}/g) || []).forEach((w) => {
-      if (STOPWORDS.has(w)) return;
-      freq[w] = (freq[w] || 0) + 1;
-    });
-  }));
-  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 40);
-}
-
-function renderNuvem(resps) {
-  const palavras = nuvemPalavras(resps);
-  const el = document.getElementById("nuvem-palavras");
-  if (!palavras.length) { el.innerHTML = `<p style="color:var(--cinza-medio);font-size:.85rem">Nenhuma resposta ainda.</p>`; return; }
-  const max = palavras[0][1], min = palavras[palavras.length - 1][1];
-  el.innerHTML = palavras.map(([w, n]) => {
-    const t = max === min ? 1 : (n - min) / (max - min);
-    return `<span style="font-size:${(0.85 + t * 1.65).toFixed(2)}rem;opacity:${(0.55 + t * 0.45).toFixed(2)};color:${TEAL};font-weight:700" title="${n}×">${escPergunta(w)}</span>`;
-  }).join(" ");
 }
 
 function contar(resps, campo) {
@@ -162,8 +136,6 @@ function render() {
 
   // gincanas, uma média por item
   grafico("graf-gincanas", "bar", GINCANAS_ITENS, mediasGincanasPorItem(resps).map((v) => +v.toFixed(2)), { indexAxis: "y" });
-
-  renderNuvem(resps);
 
   // logística
   const mediasLog = LOGISTICA_ITENS.map((_, i) => mediaEscala(resps, "logistica", i) || 0);
