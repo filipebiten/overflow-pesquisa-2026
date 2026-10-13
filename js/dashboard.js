@@ -45,6 +45,8 @@ function mediaMomentosCulto(resps) {
 }
 
 const GINCANAS_ITENS = ["Montagem das Bandeiras", "Gincana Bíblica Indoor", "Pega-Bandeira Noturno", "Circuito Físico", "Batalha Naval"];
+const IMPACTO_ITENS = ["Viveu o tema Novos Começos", "Desafiado a viver algo novo com Deus", "Teve um encontro com Deus", "Pretende se engajar mais no PGM"];
+const VALOR_RETIRO_ORDEM = ["Caro, não valeu a pena", "Caro, mas valeu a pena", "Preço justo pelo que recebi", "Barato pelo que recebi"];
 
 function mediaCampoSimples(resps, campo) {
   const vals = resps.map((r) => r[campo]).filter((v) => typeof v === "number");
@@ -161,6 +163,20 @@ function render() {
   const expect = contar(resps, "expectativas");
   const ordemExpect = ["Muito abaixo", "Abaixo", "Atendeu", "Superou"].filter((k) => expect[k]);
   grafico("graf-expectativas", "bar", ordemExpect, ordemExpect.map((k) => expect[k]), { scales: { x: { beginAtZero: true } } });
+
+  // participaria novamente
+  const participaria = contar(resps, "participaria_novamente");
+  const ordemParticiparia = ["Sim", "Talvez", "Não"].filter((k) => participaria[k]);
+  grafico("graf-participaria", "pie", ordemParticiparia, ordemParticiparia.map((k) => participaria[k]));
+
+  // custo-benefício do valor pago
+  const valorRetiro = contar(resps, "valor_retiro");
+  const ordemValor = VALOR_RETIRO_ORDEM.filter((k) => valorRetiro[k]);
+  grafico("graf-valor-retiro", "bar", ordemValor, ordemValor.map((k) => valorRetiro[k]), { scales: { x: { beginAtZero: true } } });
+
+  // impacto espiritual (concordância média por item)
+  const mediasImpacto = IMPACTO_ITENS.map((_, i) => +((mediaEscala(resps, "impacto", i) || 0).toFixed(2)));
+  grafico("graf-impacto", "bar", IMPACTO_ITENS, mediasImpacto, { indexAxis: "y" });
 
   // respostas abertas
   const lista = document.getElementById("lista-abertas");
