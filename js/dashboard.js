@@ -46,6 +46,23 @@ function mediaMomentosCulto(resps) {
   });
 }
 
+const GINCANAS_ITENS = ["Montagem das Bandeiras", "Gincana Bíblica Indoor", "Pega-Bandeira Noturno", "Circuito Físico", "Batalha Naval"];
+
+function mediaCampoSimples(resps, campo) {
+  const vals = resps.map((r) => r[campo]).filter((v) => typeof v === "number");
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+}
+
+function mediasGincanasPorItem(resps) {
+  return [
+    mediaEscala(resps, "momentos", 0) || 0,
+    mediaEscala(resps, "momentos", 1) || 0,
+    mediaEscala(resps, "momentos", 2) || 0,
+    mediaCampoSimples(resps, "momento_circuito_nota") || 0,
+    mediaCampoSimples(resps, "momento_batalha_nota") || 0,
+  ];
+}
+
 function mediaGincanas(resps) {
   const vals = [];
   resps.forEach((r) => {
@@ -131,12 +148,20 @@ function render() {
   });
   grafico("graf-cultos", "bar", CULTOS.map((c) => c.titulo), mediasCulto.map((v) => +v.toFixed(2)));
 
+  // média total dos cultos (média das médias dos 4 cultos)
+  const mediasCultoValidas = mediasCulto.filter((v) => v > 0);
+  const mediaCultosGeral = mediasCultoValidas.length ? mediasCultoValidas.reduce((a, b) => a + b, 0) / mediasCultoValidas.length : null;
+  document.getElementById("media-cultos").textContent = mediaCultosGeral != null ? mediaCultosGeral.toFixed(1) : "—";
+
   // avaliação por momento do culto (média de cada momento, juntando os 4 cultos)
   grafico("graf-momentos-culto", "bar", MOMENTOS_CULTO, mediaMomentosCulto(resps).map((v) => +v.toFixed(2)), { indexAxis: "y" });
 
   // gincanas (média geral de todos os momentos/dinâmicas)
   const gincanas = mediaGincanas(resps);
   document.getElementById("gincanas").textContent = gincanas != null ? gincanas.toFixed(1) : "—";
+
+  // gincanas, uma média por item
+  grafico("graf-gincanas", "bar", GINCANAS_ITENS, mediasGincanasPorItem(resps).map((v) => +v.toFixed(2)), { indexAxis: "y" });
 
   renderNuvem(resps);
 
