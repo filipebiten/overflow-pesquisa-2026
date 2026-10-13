@@ -21,7 +21,7 @@ const ABERTAS = [
 ];
 
 const TEAL = "#186678", TEAL_LIGHT = "#2589A0", PRETO = "#0A0A0A", CINZA = "#7A7A7A";
-const PALETA = ["#186678", "#2589A0", "#0F4856", "#7A7A7A", "#D8D4CA", "#0A0A0A"];
+const PALETA = ["#186678", "#0A0A0A", "#D8D4CA", "#2589A0", "#7A7A7A", "#0F4856"];
 
 let todas = [];
 let filtro = "todos";
